@@ -1,13 +1,7 @@
-local addonname,addontable = ...
-
 local UnitPower = UnitPower
 local CJRReborn = LibStub("AceAddon-3.0"):GetAddon("CJRReborn")
 local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
-
-function CJRPally:OnEnable()
-	print("Pally Module Loaded")
-end
 
 function CJRPally:AoE()
 	spec = GetSpecialization()
@@ -78,6 +72,10 @@ function CJRPally:ProtPallyAoE()
 	if (CJRHelpers:ShouldInterrupt()) then
 		CJRHelpers:CastSpell("Rebuke")
 		return
+	end
+
+	if (not UnitIsUnit("targettarget","player")) then
+		CJRHelpers:CastSpell("Reckoning")
 	end
 
 	if (not CJRHelpers:GCDActive()) then

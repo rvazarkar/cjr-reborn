@@ -31,7 +31,6 @@ end
 function CJRReborn:OnInitialize()
 	CJRReborn:RegisterChatCommand("cjr","StartRotation")
 	CJRReborn:RegisterEvent("PLAYER_REGEN_ENABLED","LeaveCombat")
-	frame:SetScript("OnLoad",frame.OnLoad)
 	self.db = LibStub("AceDB-3.0"):New("CJRDB",{
 		char={
 			minimap={
