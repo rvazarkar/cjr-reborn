@@ -1,0 +1,12 @@
+## Interface: 50400
+## Title: CJR Reborn
+## Notes: The rebirth of the old one
+## Author: CptJesus
+## SavedVariables: CJRDB
+
+embeds.xml
+
+core.lua
+
+helpers.lua
+Rotations\paladin.lua
