@@ -8,6 +8,14 @@ local UnitHealth = UnitHealth
 local UnitHealthMax = UnitHealthMax
 local CastSpellByName = CastSpellByName
 local IsSpellInRange = IsSpellInRange
+local GetUnitSpeed = GetUnitSpeed
+local GetSpellInfo = GetSpellInfo
+local UnitGUID = UnitGUID
+local GetTime = GetTime
+local UnitCastingInfo = UnitCastingInfo
+local GetTalentInfo = GetTalentInfo
+
+local DoTBlacklist = {}
 
 function CJRHelpers:CalculateSpec()
 	--[[
@@ -32,30 +40,65 @@ function CJRHelpers:CalculateSpec()
 	return globalid
 end
 
+function CJRHelpers:IsMoving()
+	return GetUnitSpeed("player") > 0
+end
+
 function CJRHelpers:GCDActive()
 	start,duration,_ = GetSpellCooldown(61304)
 	if (start == 0) then
-		return false
-	else
-		return true
-	end
-end
-
-function CJRHelpers:HasAura(buffname)
-	_,_,_,_,_,duration,_,_,_,_,_ = UnitBuff("player",buffname)
-	if (duration == nil) then
-		return false
+		_,_,_,_,starttime = UnitCastingInfo("player")
+		if (starttime) then
+			return false
+		else
+			return true
+		end
 	else
 		return true
 	end
 end
 
 function CJRHelpers:HasAura(buffname,target)
+	if (not target) then
+		target = "player"
+	end
 	_,_,_,_,_,duration,_,_,_,_,_ = UnitBuff(target,buffname)
 	if (duration == nil) then
 		return false
 	else
 		return true
+	end
+end
+
+function CJRHelpers:HasTalent(index)
+	_,_,_,_,selected = GetTalentInfo(index)
+	return selected
+end
+
+function CJRHelpers:CalculateDoT(dotname,target)
+	local guid = UnitGUID("target")
+	local key = {guid,dotname}
+	local blacklistTime = DoTBlacklist[key]
+	local time = GetTime()
+	if (blacklistTime) then
+		if (time >= blacklistTime) then
+			DoTBlacklist[key] = nil
+		else
+			return false
+		end
+	end
+
+	if (not self:HasAura(dotname,target)) then
+		if (CJRHelpers:CastSpell(dotname,target)) then
+			_,_,_,_,_,_,casttime = GetSpellInfo(dotname)
+			blacklistTime = time + casttime + 1500
+			DoTBlacklist[key] = blacklistTime
+			return true
+		else
+			return false
+		end
+	else
+		return false
 	end
 end
 
