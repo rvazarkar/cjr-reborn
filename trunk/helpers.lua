@@ -49,9 +49,9 @@ function CJRHelpers:GCDActive()
 	if (start == 0) then
 		_,_,_,_,starttime = UnitCastingInfo("player")
 		if (starttime) then
-			return false
-		else
 			return true
+		else
+			return false
 		end
 	else
 		return true
@@ -62,12 +62,16 @@ function CJRHelpers:HasAura(buffname,target)
 	if (not target) then
 		target = "player"
 	end
-	_,_,_,_,_,duration,_,_,_,_,_ = UnitBuff(target,buffname)
+	_,_,_,_,_,duration,_,_,_,_,_ = UnitAura(target,buffname,nil,"PLAYER")
 	if (duration == nil) then
 		return false
 	else
 		return true
 	end
+end
+
+function CJRHelpers:IsChanneling(target)
+	return UnitChannelInfo(target)
 end
 
 function CJRHelpers:HasTalent(index)
@@ -77,7 +81,7 @@ end
 
 function CJRHelpers:CalculateDoT(dotname,target)
 	local guid = UnitGUID("target")
-	local key = {guid,dotname}
+	local key = guid..dotname
 	local blacklistTime = DoTBlacklist[key]
 	local time = GetTime()
 	if (blacklistTime) then
@@ -87,11 +91,11 @@ function CJRHelpers:CalculateDoT(dotname,target)
 			return false
 		end
 	end
-
-	if (not self:HasAura(dotname,target)) then
+	name,_,_,_,_,_,duration = UnitDebuff(target,dotname,nil,"PLAYER")
+	_,_,_,_,_,_,casttime = GetSpellInfo(dotname)
+	if (not name or ((duration - time) < ((casttime/1000) + 1))) then
 		if (CJRHelpers:CastSpell(dotname,target)) then
-			_,_,_,_,_,_,casttime = GetSpellInfo(dotname)
-			blacklistTime = time + casttime + 1500
+			blacklistTime = time + (casttime/1000) + 1.5
 			DoTBlacklist[key] = blacklistTime
 			return true
 		else
