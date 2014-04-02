@@ -10,3 +10,4 @@ core.lua
 
 helpers.lua
 Rotations\paladin.lua
+Rotations\priest.lua
