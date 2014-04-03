@@ -49,9 +49,14 @@ end
 
 function CJRPriest:ShadowAoE(AoEList,count)
     if (not CJRHelpers:GCDActive()) then
-        if (count >= 5) then
+        if (count >= 5 and not CJRHelpers:IsMoving()) then
             if (not CJRHelpers:IsChanneling("player")) then
-                if (CJRHelpers:CastSpell("Mind Sear")) then return end
+                if (not UnitExists("target")) then
+                    ISetAsUnitID(AoEList[1],"CastUnit")
+                    if (CJRHelpers:CastSpell("Mind Sear","CastUnit")) then return end
+                else
+                    if (CJRHelpers:CastSpell("Mind Sear")) then return end
+                end
             end
         else
             for k=1,#AoEList do
