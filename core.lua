@@ -76,7 +76,7 @@ function frame:OnUpdate(elapsed)
 end
 
 function CJRReborn:OnInitialize()
-	CJRReborn:RegisterChatCommand("cjr","StartRotation")
+	CJRReborn:RegisterChatCommand("cjr","ShowGUI")
 	CJRReborn:RegisterEvent("PLAYER_REGEN_ENABLED","LeaveCombat")
 	self.db = LibStub("AceDB-3.0"):New("CJRDB",{
 		char={
