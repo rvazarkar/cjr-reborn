@@ -8,21 +8,59 @@ local LDBIcon = LDB and LibStub("LibDBIcon-1.0",true)
 local running = false
 local frame = CreateFrame("frame")
 local ClassModule
-local Helpers
+local CJRHelpers
 
 local currentspec
 local AoE = false
 local unsupported = false;
+local NextAoEPoll = 0
+local AoEList
+local AoETargetCount = 0
 
 local moduletable={["PALADIN"]="CJRPally",["WARRIOR"]="CJRWar",["HUNTER"]="CJRHunter",
 	["ROGUE"]="CJRRogue",["PRIEST"]="CJRPriest",["DEATHKNIGHT"]="CJRDK",["SHAMAN"]="CJRSham",["MAGE"]="CJRMage",
 	["WARLOCK"]="CJRWarlock",["MONK"]="CJRMonk",["DRUID"]="CJRDruid"}
 
 function frame:OnUpdate(elapsed)
-	if (running and UnitExists("target")) then
+	if ((CJRReborn.db.char.AoEMode == 0 or AoE == true) and running) then
+		if (GetTime() > NextAoEPoll) then
+			local checkspell = ClassModule:AoECheckSpell()
+			NextAoEPoll = GetTime() + 1.5
+			AoEList = {}
+			AoETargetCount = 0
+			objects = GetTotalObjects(TYPE_UNIT)
+            for entry = 1,objects do
+                local targuid = IGetObjectListEntry(entry)
+                ISetAsUnitID(targuid,"CheckUnit")
+                local object = GetObjectFromGUID(targuid)
+                if (UnitCanAttack("player","CheckUnit") and UnitHealth("CheckUnit") > 0 and (UnitAffectingCombat("CheckUnit") == 1 or CJRHelpers:IsDummy("CheckUnit"))) then
+                    if (IsSpellInRange(checkspell,"CheckUnit") == 1 and CJRHelpers:AmIFacing(targuid) and CJRHelpers:IsLoS(targuid)) then
+                        AoEList[#AoEList+1] = targuid
+                        AoETargetCount = AoETargetCount + 1
+                    end
+                end
+            end
+        end
+        if (CJRReborn.db.char.AoEMode == 0) then
+	        if (AoETargetCount > 1) then
+	        	if (not AoE) then
+	        		CJRReborn:Print("AoE Switched On")
+	        		AoE = true
+	        	end
+	        else
+	        	if (AoE) then
+		        	CJRReborn:Print("AoE Switched Off")
+		        	AoE = false
+		        end
+	        end
+	    end
+    end
+			
+
+	if (running) then
 		if (AoE == true) then
-			ClassModule:AoE()
-		else
+			ClassModule:AoE(AoEList,AoETargetCount)
+		elseif (running and UnitExists("target")) then
 			ClassModule:SingleTarget()
 		end
 	end
@@ -44,10 +82,12 @@ end
 
 function CJRReborn:LeaveCombat()
 	if (self.db.char.StopAfterCombat) then
-		running = false
+		if (running) then
+			running = false
 
-		string = (running == true) and "On" or "Off"
-		CJRReborn:Print("CJR is now "..string)
+			string = (running == true) and "On" or "Off"
+			CJRReborn:Print("CJR is now "..string)
+		end
 	end
 end
 
@@ -69,7 +109,7 @@ function CJRReborn:OnEnable()
 		end
 	end
 	self:Print("Loaded CJR")
-	Helpers = CJRReborn:GetModule("CJRHelpers")
+	CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 	ClassModule = CJRReborn:GetModule(moduletable[select(2,UnitClass("player"))],true)
 	if (ClassModule == nil) then
 		self:Print("Your class is currently unsupported!")
@@ -79,9 +119,11 @@ function CJRReborn:OnEnable()
 	local cjrbutton = CreateFrame("BUTTON","CJRAoEToggleButton")
 	SetBindingClick("G",cjrbutton:GetName())
 	cjrbutton:SetScript("OnClick",function(self,button,down)
-		AoE = not AoE
-		string = (AoE == true) and "On" or "Off"
-		CJRReborn:Print("AoE Mode is now "..string)
+		if (CJRReborn.db.char.AoEMode == 1) then
+			AoE = not AoE
+			string = (AoE == true) and "On" or "Off"
+			CJRReborn:Print("AoE Mode is now "..string)
+		end
 	end)
 
 	local cjrtoggle = CreateFrame("BUTTON","CJRToggleButton")

@@ -70,6 +70,15 @@ function CJRHelpers:HasAura(buffname,target)
 	end
 end
 
+function CJRHelpers:IsDummy(target)
+	name = UnitName(target)
+	if (name:find("Training Dummy") == nil) then
+		return false
+	else
+		return true
+	end
+end
+
 function CJRHelpers:IsChanneling(target)
 	return UnitChannelInfo(target)
 end
@@ -77,6 +86,14 @@ end
 function CJRHelpers:HasTalent(index)
 	_,_,_,_,selected = GetTalentInfo(index)
 	return selected
+end
+
+function CJRHelpers:AmIFacing(guid)
+	return Player:IsFacing(GetObjectFromGUID(guid))
+end
+
+function CJRHelpers:IsLoS(guid)
+	return GetObjectFromGUID(guid):InLineOfSight()
 end
 
 function CJRHelpers:CalculateDoT(dotname,target)

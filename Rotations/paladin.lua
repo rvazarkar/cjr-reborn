@@ -1,14 +1,19 @@
 local UnitPower = UnitPower
+local GetSpecialization = GetSpecialization
 local CJRReborn = LibStub("AceAddon-3.0"):GetAddon("CJRReborn")
 local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
 
-function CJRPally:AoE()
+function CJRPally:AoECheckSpell()
+	return "Crusader Strike"
+end
+
+function CJRPally:AoE(AoETargetList,count)
 	spec = GetSpecialization()
 	if (spec == 2) then
-		self:ProtPallyAoE()
+		self:ProtPallyAoE(count)
 	elseif (spec == 3) then
-		self:RetributionAoE()
+		self:RetributionAoE(count)
 	end
 end
 
@@ -36,7 +41,7 @@ function CJRPally:ProtPallySingleTarget()
 		return
 	end
 
-	if (not UnitIsUnit("targettarget","player")) then
+	if (not UnitIsUnit("targettarget","player") and UnitExists("targettarget")) then
 		CJRHelpers:CastSpell("Reckoning")
 	end
 
@@ -74,7 +79,7 @@ function CJRPally:ProtPallyAoE()
 		return
 	end
 
-	if (not UnitIsUnit("targettarget","player")) then
+	if (not UnitIsUnit("targettarget","player") and UnitExists("targettarget")) then
 		CJRHelpers:CastSpell("Reckoning")
 	end
 
