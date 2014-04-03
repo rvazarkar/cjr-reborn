@@ -4,6 +4,7 @@ local CJRPriest = CJRReborn:NewModule("CJRPriest")
 
 local UnitPower = UnitPower
 local UnitGUID = UnitGUID
+local GetSpecialization = GetSpecialization
 
 function CJRPriest:IsSupportedSpec()
     spec = GetSpecialization()
@@ -20,6 +21,30 @@ end
 
 function CJRPriest:AoECheckSpell()
     return "Shadow Word: Pain"
+end
+
+function CJRPriest:CheckBuffs()
+    if (not CJRHelpers:GCDActive()) then
+        spec = GetSpecialization()
+        if (spec == 3) then
+            if (not CJRHelpers:HasAura("Shadowform","player")) then
+                CastSpellByName("Shadowform")
+                return true
+            end
+
+            if (not CJRHelpers:HasAura("Power Word: Fortitude","player")) then
+                CastSpellByName("Power Word: Fortitude")
+                return true
+            end
+
+            if (not CJRHelpers:HasAura("Inner Fire","player")) then
+                CastSpellByName("Inner Fire")
+                return true
+            end
+        end
+    end
+
+    return false
 end
 
 function CJRPriest:ShadowAoE(AoEList,count)

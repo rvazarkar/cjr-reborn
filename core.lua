@@ -12,7 +12,7 @@ local CJRHelpers
 
 local currentspec
 local AoE = false
-local unsupported = false;
+local unsupported = false
 local NextAoEPoll = 0
 local AoEList
 local AoETargetCount = 0
@@ -25,6 +25,12 @@ local moduletable={["PALADIN"]="CJRPally",["WARRIOR"]="CJRWar",["HUNTER"]="CJRHu
 	["WARLOCK"]="CJRWarlock",["MONK"]="CJRMonk",["DRUID"]="CJRDruid"}
 
 function frame:OnUpdate(elapsed)
+	if (unsupported) then return end
+
+	if (CJRReborn.db.char.MaintainBuffs) then
+		if (ClassModule:CheckBuffs()) then return end
+	end
+
 	if ((CJRReborn.db.char.AoEMode == 0 or AoE == true) and running) then
 		if (GetTime() > NextAoEPoll) then
 			local checkspell = ClassModule:AoECheckSpell()
@@ -80,7 +86,8 @@ function CJRReborn:OnInitialize()
 			AoEMode=0,
 			StopAfterCombat=false,
 			AoEButton="G",
-			ToggleButton="F"
+			ToggleButton="F",
+			MaintainBuffs=false
 		}
 	})
 end
@@ -178,7 +185,10 @@ function CJRReborn:ShowMenu()
 		},
 		{text="Stop After Combat",func=function() 
 			self.db.char.StopAfterCombat= not self.db.char.StopAfterCombat end,
-			checked=function() return self.db.char.StopAfterCombat == true end,keepShownOnClick=true}
+			checked=function() return self.db.char.StopAfterCombat == true end,keepShownOnClick=true},
+		{text="Maintain Buffs",func=function()
+			self.db.char.MaintainBuffs=not self.db.char.MaintainBuffs end,
+			checked=function() return self.db.char.MaintainBuffs == true end,keepShownOnClick=true}
 	}
 
 	local menuFrame = CreateFrame("Frame","CJRMenuFrame",UIParent,"UIDropDownMenuTemplate")
@@ -221,10 +231,18 @@ function CJRReborn:ShowGUI()
 	local checkbox = AceGUI:Create("CheckBox")
 	checkbox:SetValue(self.db.char.StopAfterCombat)
 	checkbox:SetCallback("OnValueChanged",function (value)
-		CJRReborn.db.char.StopAfterCombat = value
+		CJRReborn.db.char.StopAfterCombat = not CJRReborn.db.char.StopAfterCombat
 	end)
 	checkbox:SetLabel("Stop CJR After Combat")
 	configFrame:AddChild(checkbox)
+
+	local buffbox = AceGUI:Create("CheckBox")
+	buffbox:SetValue(self.db.char.MaintainBuffs)
+	buffbox:SetCallback("OnValueChanged",function (value)
+		CJRReborn.db.char.MaintainBuffs = not CJRReborn.db.char.MaintainBuffs
+	end)
+	buffbox:SetLabel("Recast Buffs Automatically")
+	configFrame:AddChild(buffbox)
 
 	local aoeheading = AceGUI:Create("Heading")
 	aoeheading:SetText("AoE Options")

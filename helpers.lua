@@ -97,7 +97,7 @@ function CJRHelpers:IsLoS(guid)
 end
 
 function CJRHelpers:CalculateDoT(dotname,target)
-	local guid = UnitGUID("target")
+	local guid = UnitGUID(target)
 	local key = guid..dotname
 	local blacklistTime = DoTBlacklist[key]
 	local time = GetTime()
