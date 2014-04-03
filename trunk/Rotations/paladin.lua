@@ -8,6 +8,15 @@ function CJRPally:AoECheckSpell()
 	return "Crusader Strike"
 end
 
+function CJRPally:IsSupportedSpec()
+	spec = GetSpecialization()
+	if (spec == 2 or spec == 3) then
+		return true
+	else
+		return false
+	end
+end
+
 function CJRPally:AoE(AoETargetList,count)
 	spec = GetSpecialization()
 	if (spec == 2) then

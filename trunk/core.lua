@@ -16,6 +16,9 @@ local unsupported = false;
 local NextAoEPoll = 0
 local AoEList
 local AoETargetCount = 0
+local cjrbutton
+local cjrtoggle
+local configopen = false
 
 local moduletable={["PALADIN"]="CJRPally",["WARRIOR"]="CJRWar",["HUNTER"]="CJRHunter",
 	["ROGUE"]="CJRRogue",["PRIEST"]="CJRPriest",["DEATHKNIGHT"]="CJRDK",["SHAMAN"]="CJRSham",["MAGE"]="CJRMage",
@@ -75,7 +78,9 @@ function CJRReborn:OnInitialize()
 				hide=false,
 			},
 			AoEMode=0,
-			StopAfterCombat=false
+			StopAfterCombat=false,
+			AoEButton="G",
+			ToggleButton="F"
 		}
 	})
 end
@@ -91,7 +96,24 @@ function CJRReborn:LeaveCombat()
 	end
 end
 
+function CJRReborn:TalentsChanged()
+	if (not ClassModule:IsSupportedSpec()) then
+		unsupported = true
+		self:Print("Your new specialization is unsupported. CJR Disabled")
+	else
+		unsupported = false
+		self:Print("Your new specialization is supported. CJR Enabled")
+	end
+end
+
 function CJRReborn:OnEnable()
+	StaticPopupDialogs["CJR_UNSUPPORTED"] = {
+		text="Your current specialization is unsupported by CJR",
+		button1="Ok",
+		timeout=0,
+		hideOnEscape=true,
+		preferredIndex=3
+	}
 	frame:SetAttribute("TimeSinceLastUpdate",0)
 	frame:SetScript("OnUpdate",frame.OnUpdate)
 
@@ -100,8 +122,11 @@ function CJRReborn:OnEnable()
 			type="launcher",
 			icon="Interface\\ICONS\\spell_nature_bloodlust",
 			OnClick=function(clickedframe,button)
-				if button=="RightButton" then CJRReborn:ShowMenu() elseif button=="LeftButton" 
-					then CJRReborn:ShowGUI() end
+				if button=="RightButton" then 
+					CJRReborn:ShowMenu() 
+				elseif (button=="LeftButton" and configopen==false) then
+					CJRReborn:ShowGUI() 
+				end
 			end,
 		})
 		if (LDBIcon) then
@@ -112,12 +137,15 @@ function CJRReborn:OnEnable()
 	CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 	ClassModule = CJRReborn:GetModule(moduletable[select(2,UnitClass("player"))],true)
 	if (ClassModule == nil) then
-		self:Print("Your class is currently unsupported!")
+		StaticPopup_Show("CJR_UNSUPPORTED")
+		unsupported = true
+	elseif (not ClassModule:IsSupportedSpec()) then
+		StaticPopup_Show("CJR_UNSUPPORTED")
 		unsupported = true
 	end	
 
-	local cjrbutton = CreateFrame("BUTTON","CJRAoEToggleButton")
-	SetBindingClick("G",cjrbutton:GetName())
+	cjrbutton = CreateFrame("BUTTON","CJRAoEToggleButton")
+	SetBindingClick(self.db.char.AoEButton,cjrbutton:GetName())
 	cjrbutton:SetScript("OnClick",function(self,button,down)
 		if (CJRReborn.db.char.AoEMode == 1) then
 			AoE = not AoE
@@ -126,8 +154,8 @@ function CJRReborn:OnEnable()
 		end
 	end)
 
-	local cjrtoggle = CreateFrame("BUTTON","CJRToggleButton")
-	SetBindingClick("F",cjrtoggle:GetName())
+	cjrtoggle = CreateFrame("BUTTON","CJRToggleButton")
+	SetBindingClick(self.db.char.ToggleButton,cjrtoggle:GetName())
 	cjrtoggle:SetScript("OnClick",function(self,button,down)
 		if not unsupported then
 			running = not running
@@ -135,6 +163,8 @@ function CJRReborn:OnEnable()
 			CJRReborn:Print("CJR is now "..string)
 		end
 	end)
+
+	CJRReborn:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED","TalentsChanged")
 end
 
 function CJRReborn:ShowMenu()
@@ -163,11 +193,82 @@ function CJRReborn:StartRotation(input)
 end
 
 function CJRReborn:ShowGUI()
+	configopen = true
 	local configFrame = AceGUI:Create("Frame")
 	configFrame:SetTitle("CJR Config")
 	configFrame:SetStatusText("Configuration frame for CJRotator")
-	configFrame:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end)
+	configFrame:SetCallback("OnClose",function(widget) configopen = false; AceGUI:Release(widget) end)
 	configFrame:SetHeight(300)
-	configFrame:SetWidth(500)
+	configFrame:SetWidth(400)
 	configFrame:SetLayout("Flow")
+
+	--[[local cjrheading = AceGUI:Create("Heading")
+	cjrheading:SetText("CJR Options")
+	cjrheading.width = "fill"
+	configFrame:AddChild(cjrheading) --]]
+
+	local cjrkeybind = AceGUI:Create("Keybinding")
+	cjrkeybind:SetKey(self.db.char.ToggleButton)
+	cjrkeybind:SetLabel("CJR Toggle Keybind")
+	cjrkeybind.width = "fill"
+	cjrkeybind:SetCallback("OnKeyChanged",function(key)
+		SetBinding(CJRReborn.db.char.ToggleButton)
+		SetBindingClick(cjrkeybind:GetKey(),cjrtoggle:GetName())
+		CJRReborn.db.char.ToggleButton = cjrkeybind:GetKey()
+	end)
+	configFrame:AddChild(cjrkeybind)
+
+	local checkbox = AceGUI:Create("CheckBox")
+	checkbox:SetValue(self.db.char.StopAfterCombat)
+	checkbox:SetCallback("OnValueChanged",function (value)
+		CJRReborn.db.char.StopAfterCombat = value
+	end)
+	checkbox:SetLabel("Stop CJR After Combat")
+	configFrame:AddChild(checkbox)
+
+	local aoeheading = AceGUI:Create("Heading")
+	aoeheading:SetText("AoE Options")
+	aoeheading.width = "fill"
+	configFrame:AddChild(aoeheading)
+
+	local aoekeybind = AceGUI:Create("Keybinding")
+	aoekeybind:SetKey(self.db.char.AoEButton)
+	aoekeybind:SetLabel("AoE Toggle Keybind")
+	aoekeybind.width = "fill"
+	aoekeybind:SetCallback("OnKeyChanged",function(key)
+		SetBinding(CJRReborn.db.char.AoEButton)
+		SetBindingClick(aoekeybind:GetKey(),cjrbutton:GetName())
+		CJRReborn.db.char.AoEButton = aoekeybind:GetKey()
+	end)
+	configFrame:AddChild(aoekeybind)
+
+	local aoedropdown = AceGUI:Create("Dropdown")
+	aoedropdown:SetList({
+		["auto"] = "Automatic",
+		["manual"] = "Manual",
+	})
+	aoedropdown:SetValue(self.db.char.AoEMode == 0 and "auto" or "manual")
+	aoedropdown:SetLabel("AoE Selection Mode")
+
+	aoedropdown:SetCallback("OnValueChanged",function(choice)
+		if (choice=="auto") then
+			CJRReborn.db.char.AoEMode = 0
+			aoekeybind:SetDisabled(true)
+		else
+			CJRReborn.db.char.AoEMode = 1
+			aoekeybind:SetDisabled(false)
+		end
+	end)
+	aoedropdown.width = "fill"
+	configFrame:AddChild(aoedropdown)
+
+	local autolabel = AceGUI:Create("Label")
+	autolabel:SetText("Automatic - Swaps between AoE and Single Target Automatically")
+	autolabel.width = "fill"
+	configFrame:AddChild(autolabel)
+
+	local manuallabel = AceGUI:Create("Label")
+	manuallabel:SetText("Manual - Choose AoE and Single Target using Keybind")
+	manuallabel.width = "fill"
+	configFrame:AddChild(manuallabel)
 end
