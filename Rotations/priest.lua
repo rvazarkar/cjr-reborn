@@ -5,6 +5,11 @@ local CJRPriest = CJRReborn:NewModule("CJRPriest")
 local UnitPower = UnitPower
 local UnitGUID = UnitGUID
 
+function CJRPriest:IsSupportedSpec()
+    spec = GetSpecialization()
+    if (spec == 3) then return true else return false end
+end
+
 function CJRPriest:SingleTarget()
     self:ShadowSingleTarget()
 end
