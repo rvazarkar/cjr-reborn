@@ -65,30 +65,36 @@ function CJRPriest:ShadowAoE(AoEList,count)
                 end
             end
             orbs = UnitPower("player",13)
+            if (not UnitExists("target")) then
+                casttarget = "CastUnit"
+            else
+                casttarget = "target"
+            end
+
             if (CJRHelpers:IsMoving()) then
                 if (orbs == 3) then
-                    if (CJRHelpers:CastSpell("Devouring Plague")) then return end
+                    if (CJRHelpers:CastSpell("Devouring Plague",casttarget)) then return end
                 end
 
-                if (CJRHelpers:CastSpell("Halo","target","Shadow Word: Pain")) then return end
+                if (CJRHelpers:CastSpell("Halo",casttarget,"Shadow Word: Pain")) then return end
             else
                 if (orbs == 3) then
-                    if (CJRHelpers:CastSpell("Devouring Plague")) then return end
+                    if (CJRHelpers:CastSpell("Devouring Plague",casttarget)) then return end
                 end
 
-                if (CJRHelpers:CastSpell("Mind Blast")) then return end
-                if (CJRHelpers:CastSpell("Shadow Word: Death")) then return end
-                if (CJRHelpers:HasAura("Devouring Plague","target") and CJRHelpers:HasTalent(9)) then
+                if (CJRHelpers:CastSpell("Mind Blast",casttarget)) then return end
+                if (CJRHelpers:CastSpell("Shadow Word: Death",casttarget)) then return end
+                if (CJRHelpers:HasAura("Devouring Plague",casttarget) and CJRHelpers:HasTalent(9)) then
                     name,_,_,_,_,endtime = CJRHelpers:IsChanneling("player")
                     if (not name or (name == "Mind Sear" and (endtime - (GetTime()*1000) < 1))) then
-                        if (CJRHelpers:CastSpell("Mind Sear","target","Shadow Word: Pain")) then return end
+                        if (CJRHelpers:CastSpell("Mind Sear",casttarget,"Shadow Word: Pain")) then return end
                     end
                 end
 
-                if (CJRHelpers:CastSpell("Halo","target","Shadow Word: Pain")) then return end
+                if (CJRHelpers:CastSpell("Halo",casttarget,"Shadow Word: Pain")) then return end
                 name,_,_,_,_,endtime = CJRHelpers:IsChanneling("player")
                 if (not name or (name == "Mind Sear" and (endtime - (GetTime()*1000) < 1))) then
-                    if (CJRHelpers:CastSpell("Mind Sear","target","Shadow Word: Pain")) then return end
+                    if (CJRHelpers:CastSpell("Mind Sear",casttarget,"Shadow Word: Pain")) then return end
                 end
             end
         end
