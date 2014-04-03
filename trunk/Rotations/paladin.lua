@@ -3,9 +3,39 @@ local GetSpecialization = GetSpecialization
 local CJRReborn = LibStub("AceAddon-3.0"):GetAddon("CJRReborn")
 local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
+local GetShapeshiftForm = GetShapeshiftForm
 
 function CJRPally:AoECheckSpell()
 	return "Crusader Strike"
+end
+
+function CJRPally:CheckBuffs()
+	if (not CJRHelpers:GCDActive()) then
+        spec = GetSpecialization()
+        if (spec == 2) then
+            if (not CJRHelpers:HasAura("Blessing of Kings","player")) then
+                CastSpellByName("Blessing of Kings")
+                return true
+            end
+
+            if (not CJRHelpers:HasAura("Righteous Fury","player")) then
+                CastSpellByName("Righteous Fury")
+                return true
+            end
+
+            if (GetShapeshiftForm() ~= 3) then
+                CastSpellByName("Seal of Insight")
+                return true
+            end
+        elseif (spec == 3) then
+        	if (not CJRHelpers:HasAura("Blessing of Kings","player")) then
+                CastSpellByName("Blessing of Kings")
+                return true
+            end
+        end
+    end
+
+    return false
 end
 
 function CJRPally:IsSupportedSpec()
@@ -118,6 +148,13 @@ function CJRPally:RetributionSingleTarget()
 	end
 
 	if (not self:GCDActive()) then
+		if (CJRReborn.db.char.MaintainBuffs) then
+			if (GetShapeshiftForm() ~= 1) then
+	            CastSpellByName("Seal of Truth")
+	            return true
+	        end
+	    end
+
 		if (not CJRHelpers:HasAura("Inquisition","player")) then 
 			if (CJRHelpers:CastSpell("Inquisition")) then return end
 		end
@@ -134,13 +171,27 @@ function CJRPally:RetributionSingleTarget()
 	end
 end
 
-function CJRPally:RetributionAoE()
+function CJRPally:RetributionAoE(count)
 	if (CJRHelpers:ShouldInterrupt()) then
 		CJRHelpers:CastSpell("Rebuke")
 		return
 	end
 
 	if (not self:GCDActive()) then
+		if (CJRReborn.db.char.MaintainBuffs) then
+			if (count > 7) then
+				if (GetShapeshiftForm() ~= 2) then
+		            CastSpellByName("Seal of Righteousness")
+		            return true
+		        end
+		    else
+				if (GetShapeshiftForm() ~= 1) then
+		            CastSpellByName("Seal of Truth")
+		            return true
+		        end
+	    	end
+	    end
+
 		if (not CJRHelpers:HasAura("Inquisition","player")) then 
 			if (CJRHelpers:CastSpell("Inquisition")) then return end
 		end
