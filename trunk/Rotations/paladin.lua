@@ -6,7 +6,11 @@ local CJRPally = CJRReborn:NewModule("CJRPally")
 local GetShapeshiftForm = GetShapeshiftForm
 
 function CJRPally:AoECheckSpell()
-	return "Crusader Strike"
+	if (CJRHelpers:HasSpell("Hammer of Justice") and GetSpecialization() == 2) then
+		return "Hammer of Justice"
+	else
+		return "Crusader Strike"
+	end
 end
 
 function CJRPally:CheckBuffs()
@@ -50,7 +54,7 @@ end
 function CJRPally:AoE(AoETargetList,count)
 	spec = GetSpecialization()
 	if (spec == 2) then
-		self:ProtPallyAoE(count)
+		self:ProtPallyAoE(AoETargetList,count)
 	elseif (spec == 3) then
 		self:RetributionAoE(count)
 	end
@@ -88,6 +92,9 @@ function CJRPally:ProtPallySingleTarget()
 		if (CJRHelpers:ShouldInterrupt() and not SpellCooldownReady("Rebuke")) then
 			CJRHelpers:CastSpell("Avenger's Shield")
 		end
+		if (not UnitAffectingCombat("target") == 1) then
+			if (CJRHelpers:CastSpell("Avenger's Shield")) then return end
+		end	
 		if (CJRHelpers:CastSpell("Crusader Strike")) then return end
 		if (CJRHelpers:CastSpell("Judgment")) then return end
 		if (CJRHelpers:CastSpell("Avenger's Shield")) then return end
@@ -104,7 +111,7 @@ function CJRPally:ProtPallySingleTarget()
 	end
 end
 
-function CJRPally:ProtPallyAoE()
+function CJRPally:ProtPallyAoE(AoETargetList)
 	if (UnitPower("player",9) == 3) then
 		if (CJRHelpers:PlayerHealth() < .3) then
 			CJRHelpers:CastSpell("Word of Glory")
@@ -123,6 +130,9 @@ function CJRPally:ProtPallyAoE()
 	end
 
 	if (not CJRHelpers:GCDActive()) then
+		if (not UnitAffectingCombat("target") == 1) then
+			if (CJRHelpers:CastSpell("Avenger's Shield")) then return end
+		end	
 		if (CJRHelpers:CastSpell("Hammer of the Righteous")) then return end
 		if (CJRHelpers:CastSpell("Judgment")) then return end
 		if (CJRHelpers:HasAura("Grand Crusader","player")) then	

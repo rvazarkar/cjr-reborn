@@ -25,7 +25,7 @@ local moduletable={["PALADIN"]="CJRPally",["WARRIOR"]="CJRWar",["HUNTER"]="CJRHu
 	["WARLOCK"]="CJRWarlock",["MONK"]="CJRMonk",["DRUID"]="CJRDruid"}
 
 function frame:OnUpdate(elapsed)
-	if (unsupported) then return end
+	if (unsupported or not FireHack) then return end
 
 	if (CJRReborn.db.char.MaintainBuffs) then
 		if (ClassModule:CheckBuffs()) then return end
@@ -78,6 +78,7 @@ end
 function CJRReborn:OnInitialize()
 	CJRReborn:RegisterChatCommand("cjr","ShowGUI")
 	CJRReborn:RegisterEvent("PLAYER_REGEN_ENABLED","LeaveCombat")
+	CJRReborn:RegisterEvent("PLAYER_REGEN_DISABLED",function() NextAoEPoll=0 end)
 	self.db = LibStub("AceDB-3.0"):New("CJRDB",{
 		char={
 			minimap={
