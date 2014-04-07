@@ -40,6 +40,19 @@ function CJRHelpers:CalculateSpec()
 	return globalid
 end
 
+function CJRHelpers:LossOfControl(type)
+	numevents = C_LossOfControl.GetNumEvents()
+	if (numevents == 0) then return false end
+	for i = 1,numevents do
+		locType = C_LossOfControl.GetEventInfo(i)
+		if (locType == type) then
+			return true
+		end
+	end
+
+	return false
+end
+
 function CJRHelpers:IsMoving()
 	return GetUnitSpeed("player") > 0
 end
