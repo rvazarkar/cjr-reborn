@@ -51,7 +51,7 @@ function frame:OnUpdate(elapsed)
             end
         end
         if (CJRReborn.db.char.AoEMode == 0) then
-	        if (AoETargetCount > 1) then
+	        if (AoETargetCount > self.db.char.AoEThreshold) then
 	        	if (not AoE) then
 	        		CJRReborn:Print("AoE Switched On")
 	        		AoE = true
@@ -88,7 +88,8 @@ function CJRReborn:OnInitialize()
 			StopAfterCombat=false,
 			AoEButton="G",
 			ToggleButton="F",
-			MaintainBuffs=false
+			MaintainBuffs=false,
+			AoEThreshold=2
 		}
 	})
 end
@@ -203,21 +204,7 @@ function CJRReborn:StartRotation(input)
 	end
 end
 
-function CJRReborn:ShowGUI()
-	configopen = true
-	local configFrame = AceGUI:Create("Frame")
-	configFrame:SetTitle("CJR Config")
-	configFrame:SetStatusText("Configuration frame for CJRotator")
-	configFrame:SetCallback("OnClose",function(widget) configopen = false; AceGUI:Release(widget) end)
-	configFrame:SetHeight(300)
-	configFrame:SetWidth(400)
-	configFrame:SetLayout("Flow")
-
-	--[[local cjrheading = AceGUI:Create("Heading")
-	cjrheading:SetText("CJR Options")
-	cjrheading.width = "fill"
-	configFrame:AddChild(cjrheading) --]]
-
+function CJRReborn:CJRGuiTab(container)
 	local cjrkeybind = AceGUI:Create("Keybinding")
 	cjrkeybind:SetKey(self.db.char.ToggleButton)
 	cjrkeybind:SetLabel("CJR Toggle Keybind")
@@ -227,7 +214,7 @@ function CJRReborn:ShowGUI()
 		SetBindingClick(cjrkeybind:GetKey(),cjrtoggle:GetName())
 		CJRReborn.db.char.ToggleButton = cjrkeybind:GetKey()
 	end)
-	configFrame:AddChild(cjrkeybind)
+	container:AddChild(cjrkeybind)
 
 	local checkbox = AceGUI:Create("CheckBox")
 	checkbox:SetValue(self.db.char.StopAfterCombat)
@@ -235,7 +222,7 @@ function CJRReborn:ShowGUI()
 		CJRReborn.db.char.StopAfterCombat = not CJRReborn.db.char.StopAfterCombat
 	end)
 	checkbox:SetLabel("Stop CJR After Combat")
-	configFrame:AddChild(checkbox)
+	container:AddChild(checkbox)
 
 	local buffbox = AceGUI:Create("CheckBox")
 	buffbox:SetValue(self.db.char.MaintainBuffs)
@@ -243,12 +230,12 @@ function CJRReborn:ShowGUI()
 		CJRReborn.db.char.MaintainBuffs = not CJRReborn.db.char.MaintainBuffs
 	end)
 	buffbox:SetLabel("Recast Buffs Automatically")
-	configFrame:AddChild(buffbox)
+	container:AddChild(buffbox)
 
 	local aoeheading = AceGUI:Create("Heading")
 	aoeheading:SetText("AoE Options")
 	aoeheading.width = "fill"
-	configFrame:AddChild(aoeheading)
+	container:AddChild(aoeheading)
 
 	local aoekeybind = AceGUI:Create("Keybinding")
 	aoekeybind:SetKey(self.db.char.AoEButton)
@@ -259,7 +246,7 @@ function CJRReborn:ShowGUI()
 		SetBindingClick(aoekeybind:GetKey(),cjrbutton:GetName())
 		CJRReborn.db.char.AoEButton = aoekeybind:GetKey()
 	end)
-	configFrame:AddChild(aoekeybind)
+	container:AddChild(aoekeybind)
 
 	local aoedropdown = AceGUI:Create("Dropdown")
 	aoedropdown:SetList({
@@ -279,15 +266,57 @@ function CJRReborn:ShowGUI()
 		end
 	end)
 	aoedropdown.width = "fill"
-	configFrame:AddChild(aoedropdown)
+	container:AddChild(aoedropdown)
 
 	local autolabel = AceGUI:Create("Label")
 	autolabel:SetText("Automatic - Swaps between AoE and Single Target Automatically")
 	autolabel.width = "fill"
-	configFrame:AddChild(autolabel)
+	container:AddChild(autolabel)
 
 	local manuallabel = AceGUI:Create("Label")
 	manuallabel:SetText("Manual - Choose AoE and Single Target using Keybind")
 	manuallabel.width = "fill"
-	configFrame:AddChild(manuallabel)
+	container:AddChild(manuallabel)
+
+	local aoeslider = AceGUI:Create("Slider")
+	aoeslider:SetLabel("Automatic AoE Threshold")
+	aoeslider:SetSliderValues(2,8,1)
+	aoeslider:SetValue(self.db.char.AoEThreshold)
+	aoeslider:SetIsPercent(false)
+	aoeslider.width = "fill"
+	aoeslider:SetCallback("OnMouseUp",function(value)
+		CJRReborn.db.char.AoEThreshold = aoeslider:GetValue()
+	end)
+	container:AddChild(aoeslider)
+end
+
+function CJRReborn:ClassGuiTab(container)
+	ClassModule:SetClassConfigFrame(container,AceGUI)
+end
+
+function CJRReborn:ShowGUI()
+	configopen = true
+	local configFrame = AceGUI:Create("Frame")
+	configFrame:SetTitle("CJR Config")
+	configFrame:SetStatusText("Configuration frame for CJRotator")
+	configFrame:SetCallback("OnClose",function(widget) configopen = false; AceGUI:Release(widget) end)
+	configFrame:SetHeight(400)
+	configFrame:SetWidth(400)
+	configFrame:SetLayout("Fill")
+
+	local tabgroup = AceGUI:Create("TabGroup")
+	tabgroup:SetLayout("Flow")
+	tabgroup:SetTabs({
+		{text="CJR Config",value="tab1"},{text="Class Config",value="tab2"}
+		})
+	tabgroup:SetCallback("OnGroupSelected",function(container,event,group)
+		container:ReleaseChildren()
+		if group == "tab1" then
+			CJRReborn:CJRGuiTab(container)
+		elseif group == "tab2" then
+			CJRReborn:ClassGuiTab(container)
+		end
+	end)
+	tabgroup:SelectTab("tab1")
+	configFrame:AddChild(tabgroup)
 end

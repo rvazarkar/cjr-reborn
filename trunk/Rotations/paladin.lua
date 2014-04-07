@@ -5,11 +5,25 @@ local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
 local GetShapeshiftForm = GetShapeshiftForm
 
+
+function CJRPally:SetClassConfigFrame(container,AceGUI)
+	
+end
+
 function CJRPally:AoECheckSpell()
 	if (CJRHelpers:HasSpell("Hammer of Justice") and GetSpecialization() == 2) then
 		return "Hammer of Justice"
 	else
 		return "Crusader Strike"
+	end
+end
+
+function CJRPally:IsSupportedSpec()
+	spec = GetSpecialization()
+	if (spec == 2 or spec == 3) then
+		return true
+	else
+		return false
 	end
 end
 
@@ -40,15 +54,6 @@ function CJRPally:CheckBuffs()
     end
 
     return false
-end
-
-function CJRPally:IsSupportedSpec()
-	spec = GetSpecialization()
-	if (spec == 2 or spec == 3) then
-		return true
-	else
-		return false
-	end
 end
 
 function CJRPally:AoE(AoETargetList,count)
