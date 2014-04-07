@@ -96,6 +96,10 @@ function CJRHelpers:IsChanneling(target)
 	return UnitChannelInfo(target)
 end
 
+function CJRHelpers:IsCasting(target)
+	return UnitCastingInfo(target)
+end
+
 function CJRHelpers:HasTalent(index)
 	_,_,_,_,selected = GetTalentInfo(index)
 	return selected

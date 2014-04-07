@@ -4,9 +4,13 @@ local CJRReborn = LibStub("AceAddon-3.0"):GetAddon("CJRReborn")
 local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
 local GetShapeshiftForm = GetShapeshiftForm
-
+local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 
 function CJRPally:SetClassConfigFrame(container,AceGUI)
+	scrollframe = AceGUI:Create("ScrollFrame")
+	scroll:SetLayout("Flow")
+	container:AddChild(scroll)
+
 	
 end
 
@@ -90,7 +94,10 @@ function CJRPally:ProtPallySingleTarget()
 	end
 
 	if (not UnitIsUnit("targettarget","player") and UnitExists("targettarget")) then
-		CJRHelpers:CastSpell("Reckoning")
+		_,_,scaled = UnitDetailedThreatSituation("player","target")
+		if (scaled < 100) then
+			CJRHelpers:CastSpell("Reckoning")
+		end
 	end
 
 	if (not CJRHelpers:GCDActive()) then
@@ -131,7 +138,10 @@ function CJRPally:ProtPallyAoE(AoETargetList)
 	end
 
 	if (not UnitIsUnit("targettarget","player") and UnitExists("targettarget")) then
-		CJRHelpers:CastSpell("Reckoning")
+		_,_,scaled = UnitDetailedThreatSituation("player","target")
+		if (scaled < 100) then
+			CJRHelpers:CastSpell("Reckoning")
+		end
 	end
 
 	if (not CJRHelpers:GCDActive()) then
