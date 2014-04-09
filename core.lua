@@ -290,10 +290,6 @@ function CJRReborn:CJRGuiTab(container)
 	container:AddChild(aoeslider)
 end
 
-function CJRReborn:ClassGuiTab(container)
-	ClassModule:SetClassConfigFrame(container,AceGUI)
-end
-
 function CJRReborn:ShowGUI()
 	configopen = true
 	local configFrame = AceGUI:Create("Frame")
@@ -314,7 +310,7 @@ function CJRReborn:ShowGUI()
 		if group == "tab1" then
 			CJRReborn:CJRGuiTab(container)
 		elseif group == "tab2" then
-			CJRReborn:ClassGuiTab(container)
+			ClassModule:SetClassConfigFrame(container)
 		end
 	end)
 	tabgroup:SelectTab("tab1")

@@ -3,6 +3,7 @@ local GetSpecialization = GetSpecialization
 local CJRReborn = LibStub("AceAddon-3.0"):GetAddon("CJRReborn")
 local CJRHelpers = CJRReborn:GetModule("CJRHelpers")
 local CJRPally = CJRReborn:NewModule("CJRPally")
+local AceGUI = LibStub("AceGUI-3.0")
 local GetShapeshiftForm = GetShapeshiftForm
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
 

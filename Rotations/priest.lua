@@ -23,6 +23,10 @@ function CJRPriest:AoECheckSpell()
     return "Shadow Word: Pain"
 end
 
+function CJRPriest:SetClassConfigFrame(container)
+
+end
+
 function CJRPriest:CheckBuffs()
     if (not CJRHelpers:GCDActive()) then
         spec = GetSpecialization()
