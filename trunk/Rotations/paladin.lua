@@ -6,13 +6,18 @@ local CJRPally = CJRReborn:NewModule("CJRPally")
 local AceGUI = LibStub("AceGUI-3.0")
 local GetShapeshiftForm = GetShapeshiftForm
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation
+local currentSpec
 
-function CJRPally:SetClassConfigFrame(container,AceGUI)
+function CJRPally:SetClassConfigFrame(container)
 	scrollframe = AceGUI:Create("ScrollFrame")
-	scroll:SetLayout("Flow")
-	container:AddChild(scroll)
+	scrollframe:SetLayout("Flow")
+	container:AddChild(scrollframe)
 
-	
+	if (currentSpec == 2) then
+		if (CJRHelpers:HasSpell("Guardian of Ancient Kings")) then
+			local button = AceGUI:Create("CheckBox")
+		end
+	end
 end
 
 function CJRPally:AoECheckSpell()
@@ -24,8 +29,8 @@ function CJRPally:AoECheckSpell()
 end
 
 function CJRPally:IsSupportedSpec()
-	spec = GetSpecialization()
-	if (spec == 2 or spec == 3) then
+	currentSpec = GetSpecialization()
+	if (currentSpec == 2 or currentSpec == 3) then
 		return true
 	else
 		return false
@@ -34,8 +39,7 @@ end
 
 function CJRPally:CheckBuffs()
 	if (not CJRHelpers:GCDActive()) then
-        spec = GetSpecialization()
-        if (spec == 2) then
+        if (currentSpec == 2) then
             if (not CJRHelpers:HasAura("Blessing of Kings","player")) then
                 CastSpellByName("Blessing of Kings")
                 return true
@@ -50,7 +54,7 @@ function CJRPally:CheckBuffs()
                 CastSpellByName("Seal of Insight")
                 return true
             end
-        elseif (spec == 3) then
+        elseif (currentSpec == 3) then
         	if (not CJRHelpers:HasAura("Blessing of Kings","player")) then
                 CastSpellByName("Blessing of Kings")
                 return true
@@ -62,19 +66,17 @@ function CJRPally:CheckBuffs()
 end
 
 function CJRPally:AoE(AoETargetList,count)
-	spec = GetSpecialization()
-	if (spec == 2) then
+	if (currentSpec == 2) then
 		self:ProtPallyAoE(AoETargetList,count)
-	elseif (spec == 3) then
+	elseif (currentSpec == 3) then
 		self:RetributionAoE(count)
 	end
 end
 
 function CJRPally:SingleTarget()
-	spec = GetSpecialization()
-	if (spec == 2) then
+	if (currentSpec == 2) then
 		self:ProtPallySingleTarget()
-	elseif (spec == 3) then
+	elseif (currentSpec == 3) then
 		self:RetributionSingleTarget()
 	end
 end
