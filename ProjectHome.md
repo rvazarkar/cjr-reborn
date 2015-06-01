@@ -1,0 +1,1 @@
+New rotation addon for World of Warcraft
